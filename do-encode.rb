@@ -1,4 +1,5 @@
 require 'fluent-logger'
+require 'pathname'
 
 
 def files(ext = ".1080p.mp4")
@@ -58,6 +59,17 @@ end
 
 mode, ext, queue_only = ARGV
 
+restart_file = Pathname.new('/tmp').join(['restart-encoder', mode, ext, queue_only ? 'queue' : nil].compact.join('-'))
+File.write restart_file, "#{Time.now.inspect}\n"
+at_exit {
+  begin
+    restart_file.unlink if restart_file.exist?
+  rescue Exception => e
+    p e
+  end
+}
+
+
 STDOUT.sync = true
 
 Dir.chdir '../'
@@ -83,6 +95,11 @@ loop do
       encode(*task)
       queue = get_queue[]
     end
+  end
+
+  unless restart_file.exist?
+    puts "Restarting..."
+    exit 72
   end
 
   puts "---- no file remains. sleeping" unless queue_only
