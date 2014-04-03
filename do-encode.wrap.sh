@@ -2,8 +2,8 @@
 while true; do
   ruby $(dirname $0)/do-encode.rb $*
   retval=$?
-  if [ "_$?" != "_72" ]; then
-    exit $?
+  if [ "_${retval}" != "_72" ]; then
+    exit $retval
   fi
   echo "---"
 done
