@@ -5,14 +5,10 @@ require 'pathname'
 def files(ext = ".1080p.mp4")
   files = Dir["*"].sort_by{|_| File::Stat.new(_).mtime }
   exts = files.group_by do |i|
-    i.sub(/(\.(720|760|1080)p)?(\.mp4)?(\.ts)?$/, "")
+    i.sub(/(\.(720|1080)p)?(\.mp4)?(\.ts)?$/, "")
   end
 
-  if ext == ".720p.mp4"
-    exts.select! { |k, v| v.grep(/(#{Regexp.escape(ext)}|\.760p\.mp4)$/).empty? }
-  else
-    exts.select! { |k, v| v.grep(/#{Regexp.escape(ext)}$/).empty? }
-  end
+  exts.select! { |k, v| v.grep(/#{Regexp.escape(ext)}$/).empty? }
 
   exts.map do |base, files|
     files.grep(/\.ts$/).first
