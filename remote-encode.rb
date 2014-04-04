@@ -44,10 +44,18 @@ loop do
 
       mp4 = file.sub(/\.ts$/,'.1080p.mp4')
 
-      puts "=> scp #{mp4} #{@config[:scp_target]}/"
+      puts "=> scp #{mp4} #{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress"
       unless system("scp", mp4, "#{@config[:scp_target]}/")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
+        sleep 2
+        next
+      end
+
+      puts "=> ssh #{@config[:ssh_target]} mv #{@config[:scp_target]}/#{mp4}.progress #{@config[:scp_target]}/#{mp4}"
+      unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
+        puts " ! failed :("
+        tweet "remote-encode.#{@config[:mode]}.fail(rename): #{file}"
         sleep 2
         next
       end
