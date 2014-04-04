@@ -3,7 +3,7 @@
 def files
   files = Dir["*"].sort_by{|_| File::Stat.new(_).mtime }
   exts = files.group_by do |i|
-    i.sub(/(\.(720|760|1080)p)?(\.mp4)?(\.ts)?$/, "")
+    i.sub(/(\.(720|760|1080)p)?(\.mp4)?(\.ts)?(\.progress)?$/, "")
   end
 
   exts.select do |k, v|
