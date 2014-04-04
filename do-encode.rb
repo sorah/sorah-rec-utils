@@ -3,7 +3,7 @@ require 'pathname'
 
 
 def files(ext = ".1080p.mp4")
-  files = Dir["*"].sort_by{|_| File::Stat.new(_).mtime }
+  files = Dir["*"].sort_by{|_| File::Stat.new(_).mtime rescue -100 }
   exts = files.group_by do |i|
     i.sub(/(\.(720|1080)p)?(\.mp4)?(\.ts)?(\.progress)?$/, "")
   end
