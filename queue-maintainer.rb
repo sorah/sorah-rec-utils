@@ -1,4 +1,5 @@
 require 'redis'
+orig_dir = Dir.pwd
 Dir.chdir '../'
 
 def ts_files_have_mp4(mode)
@@ -37,6 +38,12 @@ loop do
     if 0 < n
       puts "Cleaned #{ts} from #{key} queue"
     end
+  end
+
+  unless restart_file.exist?
+    puts "Restarting..."
+    Dir.chdir orig_dir
+    exec 'ruby', __FILE__, *ARGV
   end
 
   sleep 30
