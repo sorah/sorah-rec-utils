@@ -75,7 +75,7 @@ loop do
       puts "=> ssh #{@config[:ssh_target]} mv #{@config[:scp_target]}/#{mp4}.progress #{@config[:scp_target]}/#{mp4}"
       unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
         puts " ! failed :("
-        tweet "remote-encode.#{@config[:mode]}.fail(rename): #{file}"
+        tweet "remote-encode.#{@config[:mode]}.fail(rename): @sorahers #{file}"
         redis.rpush(key, file)
         sleep 2
         next
