@@ -7,3 +7,4 @@ retval=$?
 if [ "_${retval}" = "_0" ]; then
   mv "${OUT_PROGRESS}" "${OUT}"
 fi
+exit $retval
