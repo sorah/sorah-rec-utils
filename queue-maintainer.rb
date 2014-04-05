@@ -30,6 +30,7 @@ at_exit {
 STDOUT.sync = true
 redis = Redis.new
 key = "encode-queue:#{mode}"
+working_key = "encode-working:#{mode}"
 
 loop do
   redis.lrange(key, 0, -1).each do |item|
@@ -39,6 +40,17 @@ loop do
       redis.multi do
         redis.lrem(key, 0, item)
         redis.rpush(key, basename)
+      end
+    end
+  end
+
+  redis.hgetall(working_key) do |file, time_str|
+    t = Time.at(time_str.to_i)
+    if 18000 < (Time.now - t)
+      puts "Re-enqueueing #{file}..."
+      redis.multi do
+        redis.hdel(working_key, file)
+        redis.rpush(key, file)
       end
     end
   end
