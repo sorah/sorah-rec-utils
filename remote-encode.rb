@@ -46,7 +46,7 @@ at_exit {
         puts "=> curl -# #{http_url}"
         unless system("curl", "-#", "-o", file, http_url)
           puts " ! failed :("
-          tweet "remote-encode.#{@config[:mode]}.fail(fetch): #{file}"
+          tweet "remote-encode.#{@config[:mode]}.fail(fetch): @sorahers #{file}"
           File.unlink(file) if File.exists?(file)
           redis.lpush(key, file)
           redis.hdel(working_key, file)
