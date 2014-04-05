@@ -42,11 +42,15 @@ loop do
         unless system("curl", "-#", "-o", file, http_url)
           puts " ! failed :("
           tweet "remote-encode.#{@config[:mode]}.fail(fetch): #{file}"
+          File.unlink(file) if File.exists?(file)
           redis.lpush(key, file)
           sleep 5
           next
         end
       end
+
+      mp4 = file.sub(/\.ts$/,".#{@config[:mode]}.mp4")
+      File.unlink(mp4) if File.exists?(mp4)
 
       sh = File.join(__dir__, "do-encode.#{@config[:mode]}.sh")
       puts "=> #{sh}"
@@ -58,7 +62,6 @@ loop do
         next
       end
 
-      mp4 = file.sub(/\.ts$/,'.1080p.mp4')
 
       puts "=> scp #{mp4} #{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress"
       unless system("scp", mp4, "#{@config[:scp_target]}/")
