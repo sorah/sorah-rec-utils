@@ -1,6 +1,7 @@
 require 'fluent-logger'
 require 'uri'
 require 'yaml'
+require 'redis'
 
 @config = YAML.load_file('config.yml')
 Dir.chdir @config[:workdir]
@@ -14,6 +15,8 @@ def tweet(message)
   log.post("remote-encode", message: message)
 end
 
+redis = Redis.new(:url => @config[:redis])
+key = "encode-queue:#{@config[:mode]}"
 restart_file = Pathname.new('/tmp').join(['restart-remote-encoder', $$.to_s].compact.join('-'))
 File.write restart_file, "#{Time.now.inspect}\n"
 at_exit {
@@ -28,6 +31,7 @@ loop do
   until (queue = get_queue).empty?
     while file = queue.pop
       puts " * #{file}"
+      redis.lrem(key, 0, file)
 
       if File.exists?(file)
         puts " - Skipping file download"
@@ -38,6 +42,7 @@ loop do
         unless system("curl", "-#", "-o", file, http_url)
           puts " ! failed :("
           tweet "remote-encode.#{@config[:mode]}.fail(fetch): #{file}"
+          redis.lpush(key, file)
           sleep 5
           next
         end
@@ -48,6 +53,7 @@ loop do
       unless system(sh, file)
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail: #{file}"
+        redis.lpush(key, file)
         sleep 2
         next
       end
@@ -58,6 +64,7 @@ loop do
       unless system("scp", mp4, "#{@config[:scp_target]}/")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
+        redis.rpush(key, file)
         sleep 2
         next
       end
@@ -66,6 +73,7 @@ loop do
       unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(rename): #{file}"
+        redis.rpush(key, file)
         sleep 2
         next
       end
