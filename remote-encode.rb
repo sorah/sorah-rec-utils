@@ -64,7 +64,7 @@ loop do
 
 
       puts "=> scp #{mp4} #{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress"
-      unless system("scp", mp4, "#{@config[:scp_target]}/")
+      unless system("scp", mp4, "#{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
         redis.rpush(key, file)
