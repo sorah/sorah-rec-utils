@@ -2,6 +2,7 @@ require 'fluent-logger'
 require 'uri'
 require 'yaml'
 require 'redis'
+require 'pathname'
 
 @config = YAML.load_file('config.yml')
 Dir.chdir @config[:workdir]
