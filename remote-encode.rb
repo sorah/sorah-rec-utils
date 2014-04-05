@@ -32,8 +32,10 @@ at_exit {
 #loop do
   #until (queue = get_queue).empty?
   #  while file = queue.pop
-  while file = File.basename(redis.blpop(key))
-      puts " * #{file}"
+  while task = redis.blpop(key)
+      task_queue, file = task[0], File.basename(task[1])
+
+      puts " * #{task_queue} -> #{file}"
       redis.hset(working_key, file, Time.now.to_i)
 
       if File.exists?(file)
