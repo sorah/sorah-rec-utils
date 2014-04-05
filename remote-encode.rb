@@ -17,6 +17,7 @@ end
 
 redis = Redis.new(:url => @config[:redis])
 key = "encode-queue:#{@config[:mode]}"
+working_key = "encode-working:#{@config[:mode]}"
 restart_file = Pathname.new('/tmp').join(['restart-remote-encoder', $$.to_s].compact.join('-'))
 File.write restart_file, "#{Time.now.inspect}\n"
 at_exit {
@@ -27,11 +28,12 @@ at_exit {
   end
 }
 
-loop do
-  until (queue = get_queue).empty?
-    while file = queue.pop
+#loop do
+  #until (queue = get_queue).empty?
+  #  while file = queue.pop
+  while file = File.basename(redis.blpop(key))
       puts " * #{file}"
-      redis.lrem(key, 0, file)
+      redis.hset(working_key, file, Time.now.to_i)
 
       if File.exists?(file)
         puts " - Skipping file download"
@@ -44,6 +46,7 @@ loop do
           tweet "remote-encode.#{@config[:mode]}.fail(fetch): #{file}"
           File.unlink(file) if File.exists?(file)
           redis.lpush(key, file)
+          redis.hdel(working_key, file)
           sleep 5
           next
         end
@@ -58,6 +61,7 @@ loop do
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail: #{file}"
         redis.lpush(key, file)
+        redis.hdel(working_key, file)
         sleep 2
         next
       end
@@ -68,6 +72,7 @@ loop do
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
         redis.rpush(key, file)
+        redis.hdel(working_key, file)
         sleep 2
         next
       end
@@ -77,20 +82,20 @@ loop do
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(rename): @sorahers #{file}"
         redis.rpush(key, file)
+        redis.hdel(working_key, file)
         sleep 2
         next
       end
 
+      redis.hdel(working_key, file)
       tweet "remote-encode.#{@config[:mode]}.done: #{file}"
-    end
 
-    unless restart_file.exist?
-      puts "Restarting..."
-      exit 72
-    end
+      unless restart_file.exist?
+        puts "Restarting..."
+        exit 72
+      end
 
-    puts "--- sleeping"
-    sleep 60
+#   puts "--- sleeping"
+#   sleep 60
   end
-  sleep 90
-end
+#  sleep 90
