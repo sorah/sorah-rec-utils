@@ -32,6 +32,17 @@ redis = Redis.new
 key = "encode-queue:#{mode}"
 
 loop do
+  redis.lrange(key, 0, -1).each do |item|
+    basename = File.basename(item)
+    if basename != item
+      puts "Replacing #{item} with its basename"
+      redis.multi do
+        redis.lrem(key, 0, item)
+        redis.rpush(key, basename)
+      end
+    end
+  end
+
   removable = ts_files_have_mp4(mode)
   removable.each do |ts|
     n = redis.lrem(key, 0, ts)
