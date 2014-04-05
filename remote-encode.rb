@@ -14,6 +14,16 @@ def tweet(message)
   log.post("remote-encode", message: message)
 end
 
+restart_file = Pathname.new('/tmp').join(['restart-remote-encoder', $$.to_s].compact.join('-'))
+File.write restart_file, "#{Time.now.inspect}\n"
+at_exit {
+  begin
+    restart_file.unlink if restart_file.exist?
+  rescue Exception => e
+    p e
+  end
+}
+
 loop do
   until (queue = get_queue).empty?
     while file = queue.pop
@@ -62,6 +72,12 @@ loop do
 
       tweet "remote-encode.#{@config[:mode]}.done: #{file}"
     end
+
+    unless restart_file.exist?
+      puts "Restarting..."
+      exit 72
+    end
+
     puts "--- sleeping"
     sleep 60
   end
