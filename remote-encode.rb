@@ -49,8 +49,8 @@ at_exit {
           puts " ! failed :("
           tweet "remote-encode.#{@config[:mode]}.fail(fetch): @sorahers #{file}"
           File.unlink(file) if File.exists?(file)
-          redis.lpush(key, file)
           redis.hdel(working_key, file)
+          redis.lpush(key, file)
           sleep 5
           next
         end
@@ -64,8 +64,8 @@ at_exit {
       unless system(sh, file)
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail: #{file}"
-        redis.lpush(key, file)
         redis.hdel(working_key, file)
+        redis.lpush(key, file)
         sleep 2
         next
       end
@@ -75,8 +75,8 @@ at_exit {
       unless system("scp", mp4, "#{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
-        redis.rpush(key, file)
         redis.hdel(working_key, file)
+        redis.rpush(key, file)
         sleep 2
         next
       end
@@ -85,8 +85,8 @@ at_exit {
       unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
         puts " ! failed :("
         tweet "remote-encode.#{@config[:mode]}.fail(rename): @sorahers #{file}"
-        redis.rpush(key, file)
         redis.hdel(working_key, file)
+        redis.rpush(key, file)
         sleep 2
         next
       end
