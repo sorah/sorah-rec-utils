@@ -33,6 +33,7 @@ at_exit {
   #until (queue = get_queue).empty?
   #  while file = queue.pop
   while task = redis.blpop(key)
+    begin
       task_queue, file = task[0], File.basename(task[1])
 
       puts " * #{task_queue} -> #{file}"
@@ -97,6 +98,15 @@ at_exit {
         puts "Restarting..."
         exit 72
       end
+    rescue Exception => e
+      if file
+        redis.hdel(working_key, file)
+        redis.rpush(key, file)
+      end
+      raise
+    ensure
+      redis.hdel(working_key, file) if file
+    end
 
 #   puts "--- sleeping"
 #   sleep 60
