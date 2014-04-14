@@ -93,6 +93,7 @@ at_exit {
 
       redis.hdel(working_key, file)
       tweet "remote-encode.#{@config[:mode]}.done: #{file}"
+      puts "done."
 
       unless restart_file.exist?
         puts "Restarting..."
