@@ -20,7 +20,7 @@ class Avconv
   def cuttable?(t)
     cmd = %W[#{@bin} -loglevel quiet -i - -acodec copy -vcodec copy -f mpegts -t 20 -y #{File::NULL}]
     pipeline = skip_pipeline(t) + [cmd]
-    ts = Open3.pipeline *pipeline
+    ts = Open3.pipeline_r *pipeline
     ts.last.success?
   end
 
@@ -37,13 +37,15 @@ HD_SIZE = '1440x1080'
 MAIN_STREAM = 'Stream #0:0'# 'Stream #0.0'
 
 def bsearch(avconv, lo, hi, &blk)
+  truthy = false
   while lo < hi
     mid = (lo + hi)/2
    $stderr.puts [lo, hi, mid].inspect
     lines = avconv.skip(mid).lines
     if lines.any? { |line| line.include?(MAIN_STREAM) and line.include?(HD_SIZE) }
       $stderr.puts lines.find { |line| line.include?(MAIN_STREAM) and line.include?(HD_SIZE) }
-      if blk.nil? or blk.call mid
+      if blk.nil? or blk.call(mid)
+        truthy = true
         hi = mid
       else
         lo = mid+1
@@ -57,7 +59,7 @@ def bsearch(avconv, lo, hi, &blk)
       #raise "Error at mid=#{mid}"
     end
   end
-  lo
+  return [lo, truthy]
 end
 
 path = ARGV[0] or exit 1
@@ -66,10 +68,15 @@ avconv = Avconv.new path
 
 MAX_PACKETS = 300000
 # avconv -i が HD_SIZE になるところを見つけてから、それより後ろで cuttable なところを見つける
-lo = bsearch avconv, 0, MAX_PACKETS
-ans = bsearch avconv, lo, MAX_PACKETS do |t|
-  avconv.cuttable? t
+lo, __ = bsearch(avconv, 0, MAX_PACKETS)
+$stderr.puts lo.inspect
+$stderr.puts '-----'
+
+ans, truthy = bsearch(avconv, lo, MAX_PACKETS) do |t|
+  avconv.cuttable?(t)
 end
+
+ans = lo unless truthy
 
 $stderr.puts "Answer: #{ans}"
 write_cmd = ["tail", "-c", "+#{188*ans}", path]
