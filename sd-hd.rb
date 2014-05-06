@@ -20,7 +20,7 @@ class Avconv
   def cuttable?(t)
     cmd = %W[#{@bin} -loglevel quiet -i - -acodec copy -vcodec copy -f mpegts -t 20 -y #{File::NULL}]
     pipeline = skip_pipeline(t) + [cmd]
-    ts = Open3.pipeline_r *pipeline
+    ts = Open3.pipeline *pipeline
     ts.last.success?
   end
 
