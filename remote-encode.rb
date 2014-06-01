@@ -25,80 +25,80 @@ at_exit {
   end
 }
 
-  while task = redis.blpop(key)
-    begin
-      task_queue, file = task[0], File.basename(task[1])
+while task = redis.blpop(key)
+  begin
+    task_queue, file = task[0], File.basename(task[1])
 
-      puts " * #{task_queue} -> #{file}"
-      redis.hset(working_key, file, Time.now.to_i)
+    puts " * #{task_queue} -> #{file}"
+    redis.hset(working_key, file, Time.now.to_i)
 
-      if File.exists?(file)
-        puts " - Skipping file download"
-      else
-        http_url = "#{@config[:video_url_base]}/#{URI.encode_www_form_component(file)}"
+    if File.exists?(file)
+      puts " - Skipping file download"
+    else
+      http_url = "#{@config[:video_url_base]}/#{URI.encode_www_form_component(file)}"
 
-        puts "=> curl -# #{http_url}"
-        unless system("curl", "-#", "-o", file, http_url)
-          puts " ! failed :("
-          tweet "remote-encode.#{@config[:mode]}.fail(fetch): @sorahers #{file}"
-          File.unlink(file) if File.exists?(file)
-          redis.hdel(working_key, file)
-          redis.lpush(key, file)
-          sleep 5
-          next
-        end
-      end
-
-      mp4 = file.sub(/\.ts$/,".#{@config[:mode]}.mp4")
-      File.unlink(mp4) if File.exists?(mp4)
-
-      sh = File.join(__dir__, "do-encode.#{@config[:mode]}.sh")
-      puts "=> #{sh}"
-      unless system(sh, file)
+      puts "=> curl -# #{http_url}"
+      unless system("curl", "-#", "-o", file, http_url)
         puts " ! failed :("
-        tweet "remote-encode.#{@config[:mode]}.fail: #{file}"
+        tweet "remote-encode.#{@config[:mode]}.fail(fetch): @sorahers #{file}"
+        File.unlink(file) if File.exists?(file)
         redis.hdel(working_key, file)
         redis.lpush(key, file)
-        sleep 2
+        sleep 5
         next
       end
-
-
-      puts "=> scp #{mp4} #{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress"
-      unless system("scp", mp4, "#{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress")
-        puts " ! failed :("
-        tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
-        redis.hdel(working_key, file)
-        redis.rpush(key, file)
-        sleep 2
-        next
-      end
-
-      puts "=> ssh #{@config[:ssh_target]} mv #{@config[:scp_target]}/#{mp4}.progress #{@config[:scp_target]}/#{mp4}"
-      unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
-        puts " ! failed :("
-        tweet "remote-encode.#{@config[:mode]}.fail(rename): @sorahers #{file}"
-        redis.hdel(working_key, file)
-        redis.rpush(key, file)
-        sleep 2
-        next
-      end
-
-      redis.hdel(working_key, file)
-      tweet "remote-encode.#{@config[:mode]}.done: #{file}"
-      puts "done."
-
-      unless restart_file.exist?
-        puts "Restarting..."
-        exit 72
-      end
-    rescue Exception => e
-      if file
-        redis.hdel(working_key, file)
-        redis.rpush(key, file)
-      end
-      raise
-    ensure
-      redis.hdel(working_key, file) if file
     end
+
+    mp4 = file.sub(/\.ts$/,".#{@config[:mode]}.mp4")
+    File.unlink(mp4) if File.exists?(mp4)
+
+    sh = File.join(__dir__, "do-encode.#{@config[:mode]}.sh")
+    puts "=> #{sh}"
+    unless system(sh, file)
+      puts " ! failed :("
+      tweet "remote-encode.#{@config[:mode]}.fail: #{file}"
+      redis.hdel(working_key, file)
+      redis.lpush(key, file)
+      sleep 2
+      next
+    end
+
+
+    puts "=> scp #{mp4} #{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress"
+    unless system("scp", mp4, "#{@config[:ssh_target]}:#{@config[:scp_target]}/#{mp4}.progress")
+      puts " ! failed :("
+      tweet "remote-encode.#{@config[:mode]}.fail(transfer): #{file}"
+      redis.hdel(working_key, file)
+      redis.rpush(key, file)
+      sleep 2
+      next
+    end
+
+    puts "=> ssh #{@config[:ssh_target]} mv #{@config[:scp_target]}/#{mp4}.progress #{@config[:scp_target]}/#{mp4}"
+    unless system("ssh", @config[:ssh_target], "mv", "#{@config[:scp_target]}/#{mp4}.progress", "#{@config[:scp_target]}/#{mp4}")
+      puts " ! failed :("
+      tweet "remote-encode.#{@config[:mode]}.fail(rename): @sorahers #{file}"
+      redis.hdel(working_key, file)
+      redis.rpush(key, file)
+      sleep 2
+      next
+    end
+
+    redis.hdel(working_key, file)
+    tweet "remote-encode.#{@config[:mode]}.done: #{file}"
+    puts "done."
+
+    unless restart_file.exist?
+      puts "Restarting..."
+      exit 72
+    end
+  rescue Exception => e
+    if file
+      redis.hdel(working_key, file)
+      redis.rpush(key, file)
+    end
+    raise
+  ensure
+    redis.hdel(working_key, file) if file
   end
+end
