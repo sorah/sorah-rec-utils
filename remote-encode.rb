@@ -7,10 +7,6 @@ require 'pathname'
 @config = YAML.load_file('config.yml')
 Dir.chdir @config[:workdir]
 
-def get_queue
-  `curl -s #{@config[:queue_url]}`.each_line.map(&:chomp).reject(&:empty?)
-end
-
 def tweet(message)
   log = Fluent::Logger::FluentLogger.new("twitter", :host=>'localhost', :port=>24224)
   log.post("remote-encode", message: message)
@@ -29,9 +25,6 @@ at_exit {
   end
 }
 
-#loop do
-  #until (queue = get_queue).empty?
-  #  while file = queue.pop
   while task = redis.blpop(key)
     begin
       task_queue, file = task[0], File.basename(task[1])
@@ -108,8 +101,4 @@ at_exit {
     ensure
       redis.hdel(working_key, file) if file
     end
-
-#   puts "--- sleeping"
-#   sleep 60
   end
-#  sleep 90
