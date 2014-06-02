@@ -209,7 +209,7 @@ module Encoder
       tweet "encode.#{Socket.gethostname}.#{mode}.done: #{source_path}"
       true
     rescue Exception => e
-      tweet "encode.#{Socket.gethostname}.#{mode}.fail(@sorahers ): #{e.inspect} #{source_path}"
+      tweet "encode.#{Socket.gethostname}.#{mode}.fail(@sorahers ): #{e.class} #{source_path}"
       puts "  ! FAILED: #{e.inspect}"
       if source_path && mode
         puts "  ! Requeueing"
