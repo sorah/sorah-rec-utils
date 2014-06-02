@@ -1,0 +1,19 @@
+:workdir: /path/to/workdir
+:script_dir: /path/to/scripts
+:redis: "redis://10.x.x.x"
+:mode:
+  - 1080p
+  - 720p
+
+:strategy:
+  :fetch:
+    :type: curl
+    :base: http://.../
+  # :type: local
+  # :path: /path/to/sourcedir
+  :save:
+    :type: scp
+    :path: /path/to/destdir
+    :host: myhost
+  # :type: local
+  # :path: /path/to/destdir
