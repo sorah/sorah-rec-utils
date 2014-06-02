@@ -245,6 +245,7 @@ module Encoder
     def check_restart_file
       if @restart_file_setup && !restart_file.exist?
         puts "Restarting..."
+        tweet "#{Socket.gethostname}.encode.restart: #{Time.now.to_i}"
         Kernel.exec "ruby", __FILE__, *ARGV
       end
     end
