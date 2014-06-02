@@ -131,7 +131,11 @@ module Encoder
 
       cmd = [script_path, @local_path, dest_progress]
       puts " * encode $ #{cmd.join("  ")}"
-      re = system(*cmd)
+      if @config[:silent]
+        re = system(*cmd, out: File::NULL, err: File::NULL)
+      else
+        re = system(*cmd)
+      end
       raise EncodeFailed unless re
 
       File.rename(dest_progress, dest)
