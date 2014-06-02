@@ -190,6 +190,7 @@ module Encoder
     end
 
     def run
+      setup_restart_file
       while task = get_task()
         work(task)
         check_restart_file
