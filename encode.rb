@@ -44,7 +44,7 @@ module Encoder
 
           if File.exist?(dest)
             puts " * Cleaning #{dest}"
-            # File.unlink(dest)
+            File.unlink(dest)
           end
         end
       end
@@ -146,7 +146,7 @@ module Encoder
       [dest_path, dest_path + ".progress"].compact.each do |file|
         if File.exist?(file)
           puts " * Clean #{file}"
-          # File.unlink(file)
+          File.unlink(file)
         end
       end
     end
