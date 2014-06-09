@@ -212,6 +212,7 @@ module Encoder
       job = Job.new(mode, source_path, @config)
       job.run
       tweet "encode.#{Socket.gethostname}.#{mode}.done: #{source_path}"
+      redis.hdel working_key(mode), source_path
       true
     rescue Exception => e
       tweet "encode.#{Socket.gethostname}.#{mode}.fail(@sorahers ): #{e.class} #{source_path}"
