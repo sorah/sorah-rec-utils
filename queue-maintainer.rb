@@ -33,16 +33,16 @@ key = "encode-queue:#{mode}"
 working_key = "encode-working:#{mode}"
 
 loop do
-  redis.lrange(key, 0, -1).each do |item|
-    basename = File.basename(item)
-    if basename != item
-      puts "Replacing #{item} with its basename"
-      redis.multi do
-        redis.lrem(key, 0, item)
-        redis.rpush(key, basename)
-      end
-    end
-  end
+  # redis.lrange(key, 0, -1).each do |item|
+  #   basename = File.basename(item)
+  #   if basename != item
+  #     puts "Replacing #{item} with its basename"
+  #     redis.multi do
+  #       redis.lrem(key, 0, item)
+  #       redis.rpush(key, basename)
+  #     end
+  #   end
+  # end
 
   redis.hgetall(working_key) do |file, time_str|
     t = Time.at(time_str.to_i)
