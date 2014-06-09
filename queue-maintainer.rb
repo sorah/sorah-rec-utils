@@ -3,6 +3,7 @@ orig_dir = Dir.pwd
 Dir.chdir '../'
 
 def ts_files_have_mp4(mode)
+  # TODO: nested dir
   files = Dir["*"].sort_by{|_| File::Stat.new(_).mtime rescue -100 }
   exts = files.group_by do |i|
     i.sub(/(\.(720|1080)p)?(\.mp4)?(\.ts)?(\.progress)?$/, "")
