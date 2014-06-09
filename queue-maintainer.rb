@@ -44,18 +44,31 @@ loop do
   #   end
   # end
 
-  redis.hgetall(working_key) do |file, time_str|
+  removable = ts_files_have_mp4(mode)
+
+  redis.hgetall(working_key).each do |file, time_str|
     t = Time.at(time_str.to_i)
-    if 18000 < (Time.now - t)
+    if 18000 < (Time.now - t) && !removable.include?(file) 
       puts "Re-enqueueing #{file}..."
       redis.multi do
         redis.hdel(working_key, file)
         redis.rpush(key, file)
       end
     end
+
+    if removable.include?(file)
+      puts "cleaning from working #{working_key} #{file}"
+        redis.hdel(working_key, file)
+    end
   end
 
-  removable = ts_files_have_mp4(mode)
+  redis.lrange(key, 0, -1).each do |ts|
+    unless File.exist?(ts)
+      redis.lrem(key, 0, ts)
+      puts "Cleaned #{ts} from #{key} queue (unexist)"
+    end
+  end
+
   removable.each do |ts|
     n = redis.lrem(key, 0, ts)
     if 0 < n
