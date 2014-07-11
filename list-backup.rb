@@ -16,9 +16,8 @@ archives_by_series = ARGV.flat_map { |backup_root|
   dir[parent.size.succ .. -1]
 }
 
-puts archives_by_series.map { |series, paths|
-  paths = paths.map(&:first)
-
+puts archives_by_series.map { |series, roots_and_series_paths|
+  paths = roots_and_series_paths.map(&:first)
 
   files = Hash[paths.map do |path|
     [path, Dir[File.join(path, series, '*.mp4')]]
