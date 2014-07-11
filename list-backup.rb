@@ -16,7 +16,7 @@ archives_by_series = ARGV.flat_map { |backup_root|
   dir[parent.size.succ .. -1]
 }
 
-puts archives_by_series.sort_by(&:first).map { |basename, paths|
+puts archives_by_series.map { |basename, paths|
   paths = paths.map(&:first)
 
 
