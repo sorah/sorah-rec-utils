@@ -25,12 +25,12 @@ puts archives_by_series.map { |series, archives_and_series_paths|
 
   video_paths_by_name = video_paths.group_by {|_| File.basename(_) }
 
-  video_paths_by_name.each do |name, filepaths|
-    if filepaths.size != archives.size
-      dirs = filepaths.map { |_| File.dirname(_) }
+  video_paths_by_name.each do |name, video_paths|
+    if video_paths.size != archives.size
+      archives_of_video = video_paths.map { |_| File.dirname(_) }
       @warnings.push <<-EOM
-!!!!\t#{series}/#{name}\t(#{filepaths.size}/#{archives.size})
-#{archives.map { |_| dirs.include?(File.join(_, series)) ? "!!!!\t  + #{_}" : "!!!!\t  - #{_}" }.join("\n")}
+!!!!\t#{series}/#{name}\t(#{video_paths.size}/#{archives.size})
+#{archives.map { |_| archives_of_video.include?(File.join(_, series)) ? "!!!!\t  + #{_}" : "!!!!\t  - #{_}" }.join("\n")}
       EOM
     end
   end
