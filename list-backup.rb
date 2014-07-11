@@ -25,6 +25,7 @@ puts archives_by_series.map { |series, archives_and_series_paths|
 
   video_paths_by_name = video_paths.group_by {|_| File.basename(_) }
 
+  # Warn insufficient
   video_paths_by_name.each do |name, video_paths|
     if video_paths.size != archives.size
       archives_of_video = video_paths.map { |_| File.dirname(_) }
