@@ -53,8 +53,8 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     @notices << "??? #{series}: GR=#{gr.size}, BS=#{bs.size}"
   end
 
-  "#{archives.size}\t#{series}: #{archives.join(' ')}"
-}.sort_by { |_| _.split(/\t/,2).first.to_i * -1 }
+  [archives.size, "#{archives.size}\t#{series}: #{archives.join(' ')}"]
+}.sort_by(&:first).map(&:last)
 
 puts "---"
 
