@@ -9,7 +9,7 @@ puts ARGV.flat_map { |backup_root|
   Dir[File.join(File.expand_path(backup_root), '*_*', '*')].select { |series_dir|
     # make sure that is directory
     File.directory?(series_dir) && /\d+_\d+\// === series_dir
-  }.map { |series_dir| 
+  }.map { |series_dir|
     [backup_root, series_dir]
   }
 }.group_by { |parent, dir|
