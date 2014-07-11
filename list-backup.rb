@@ -5,7 +5,7 @@ abort "usage #{File.basename($0)} dir dir dir ..." if ARGV.empty?
 @warnings = []
 @notices = []
 
-puts ARGV.flat_map { |backup_root|
+archives_by_series = ARGV.flat_map { |backup_root|
   Dir[File.join(File.expand_path(backup_root), '*_*', '*')].select { |series_dir|
     # make sure that is directory
     File.directory?(series_dir) && /\d+_\d+\// === series_dir
@@ -14,7 +14,9 @@ puts ARGV.flat_map { |backup_root|
   }
 }.group_by { |parent, dir|
   dir[parent.size.succ .. -1]
-}.sort_by(&:first).map { |basename, paths|
+}
+
+puts archives_by_series.sort_by(&:first).map { |basename, paths|
   paths = paths.map(&:first)
 
 
