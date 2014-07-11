@@ -19,11 +19,11 @@ archives_by_series = ARGV.flat_map { |backup_root|
 puts archives_by_series.map { |series, archives_and_series_paths|
   archives = archives_and_series_paths.map(&:first)
 
-  video_paths_by_archive = Hash[archives.map do |path|
-    [path, Dir[File.join(path, series, '*.mp4')]]
-  end]
+  video_paths = archives.flat_map do |path|
+    Dir[File.join(path, series, '*.mp4')]
+  end
 
-  names = video_paths_by_archive.values.flatten.group_by {|_| File.basename(_) }
+  names = video_paths.group_by {|_| File.basename(_) }
   names.each do |name, filepaths|
     if filepaths.size != archives.size
       dirs = filepaths.map { |_| File.dirname(_) }
