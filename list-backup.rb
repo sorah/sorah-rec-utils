@@ -13,7 +13,7 @@ puts ARGV.flat_map { |backup_root|
     [backup_root, series_dir]
   }
 }.group_by { |parent, dir|
-  dir.split(File::SEPARATOR)[-2,2].join('/')
+  dir[parent.size.succ .. -1]
 }.sort_by(&:first).map { |basename, paths|
  paths = paths.map(&:first)
 
