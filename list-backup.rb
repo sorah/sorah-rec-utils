@@ -2,8 +2,8 @@
 #
 abort "usage #{File.basename($0)} dir dir dir ..." if ARGV.empty?
 
-warnings = []
-notices = []
+@warnings = []
+@notices = []
 
 puts ARGV.map { |_|
   Dir[File.join(File.expand_path(_), '*_*', '*')].select { |__|
@@ -25,7 +25,7 @@ puts ARGV.map { |_|
  names.each do |name, filepaths|
    if filepaths.size != paths.size
      dirs = filepaths.map { |_| File.dirname(_) }
-     warnings.push <<-EOM
+     @warnings.push <<-EOM
 !!!!\t#{basename}/#{name}\t(#{filepaths.size}/#{paths.size})
 #{paths.map { |_| dirs.include?(File.join(_, basename)) ? "!!!!\t  + #{_}" : "!!!!\t  - #{_}" }.join("\n")}
      EOM
@@ -36,7 +36,7 @@ puts ARGV.map { |_|
  bs = names.keys.grep(/_BS/)
 
  if (gr.size-bs.size).abs <= 2
-   notices << "??? #{basename}: GR=#{gr.size}, BS=#{bs.size}"
+   @notices << "??? #{basename}: GR=#{gr.size}, BS=#{bs.size}"
  end
 
  "#{paths.size}\t#{basename}: #{paths.join(' ')}"
@@ -44,12 +44,12 @@ puts ARGV.map { |_|
 
 puts "---"
 
-notices.each do |_|
+@notices.each do |_|
   puts _
 end
 
 puts "---"
 
-warnings.each do |_|
+@warnings.each do |_|
   puts _
 end
