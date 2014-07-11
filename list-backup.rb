@@ -23,8 +23,9 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     Dir[File.join(path, series, '*.mp4')]
   end
 
-  names = video_paths.group_by {|_| File.basename(_) }
-  names.each do |name, filepaths|
+  video_paths_by_name = video_paths.group_by {|_| File.basename(_) }
+
+  video_paths_by_name.each do |name, filepaths|
     if filepaths.size != archives.size
       dirs = filepaths.map { |_| File.dirname(_) }
       @warnings.push <<-EOM
@@ -34,8 +35,8 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     end
   end
 
-  gr = names.keys.grep(/_GR/)
-  bs = names.keys.grep(/_BS/)
+  gr = video_paths_by_name.each_key.grep(/_GR/)
+  bs = video_paths_by_name.each_key.grep(/_BS/)
 
   if (gr.size-bs.size).abs <= 2
     @notices << "??? #{series}: GR=#{gr.size}, BS=#{bs.size}"
