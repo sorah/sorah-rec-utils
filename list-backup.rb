@@ -45,8 +45,9 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     EOM
   end
 
-  gr = video_paths_by_name.each_key.grep(/_GR/)
-  bs = video_paths_by_name.each_key.grep(/_BS/)
+  videos = video_paths_by_name.keys
+  gr = videos.grep(/_GR/)
+  bs = videos.grep(/_BS/)
 
   if (gr.size-bs.size).abs <= 2
     @notices << "??? #{series}: GR=#{gr.size}, BS=#{bs.size}"
