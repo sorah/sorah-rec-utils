@@ -126,16 +126,16 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     flag = nil
     lines = archives.map do |archive|
       if archives_of_video.include?(File.join(archive, series))
-        "!!!!\t  + #{archive}"
+        "  - doesn't have #{archive}"
       else
         flag = true
-        "!!!!\t  - #{archive}"
+        "  - have #{archive}"
       end
     end
 
     if flag
       @warnings.push <<-EOM
-!!!!\t#{series}/#{name}\t(#{video_paths.size}/#{archives.size})
+- __INSUFFICIENT__ found: #{series}/#{name} (#{video_paths.size}/#{archives.size})
 #{lines.join("\n")}
       EOM
     end
@@ -149,15 +149,15 @@ puts archives_by_series.map { |series, archives_and_series_paths|
   tids = search_tid(query)
 
   if tids.empty?
-    @warnings << "- #{series} tids not found (query: #{queryize(query).inspect})"
+    @warnings << "* #{series} tids not found (query: #{queryize(query).inspect})"
   elsif 1 < tids.size
-    #warnings << "- #{series} there're multiple tids: #{tids.inspect}"
+    #warnings << "* #{series} there're multiple tids: #{tids.inspect}"
   else
 
   end
 
   if 0 < gr.size && 0 < bs.size
-    @notices << "??? #{series}: GR=#{gr.size}, BS=#{bs.size}"
+    @notices << "- #{series}: GR=#{gr.size}, BS=#{bs.size}"
 
     progs = tids.flat_map do |(tid, name)|
       @syoboi.programs(title_id: tid)
@@ -172,7 +172,7 @@ puts archives_by_series.map { |series, archives_and_series_paths|
       cid = CIDS[ch]
 
       unless cid
-        @warnings << "unknown ch #{ch}"
+        @warnings << "- unknown ch #{ch}"
         next
       end
 
@@ -195,12 +195,12 @@ puts archives_by_series.map { |series, archives_and_series_paths|
       end
 
       unless prog
-        @warnings << "program not found: #{time}, #{ch}, #{cid}, #{_}"
+        @warnings << "- program not found: #{time}, #{ch}, #{cid}, #{_}"
         next nil
       end
 
       unless prog.count
-        #@warnings << "+ no count attribute #{prog.id}: #{video}"
+        #@warnings << "* no count attribute #{prog.id}: #{video}"
       end
 
       [video, prog]
@@ -216,38 +216,40 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     videos_by_episode.to_a.sort_by(&:first).each do |count, vs|
       safe_vs = vs.reject { |(v,pr)|
         if pr.comment && pr.comment.start_with?("!") # warnings
-          #@warnings << "#{v}: #{pr.comment}"
+          #@warnings << "* warn prog - #{v}: #{pr.comment}"
           true
         end
       }
       chs = safe_vs.map{ |(v,pr)| v.split(/_/,3)[1] }.uniq
 
       if 1 < chs.size
-        @notices << "   ##{count.to_s.rjust(3,'0')} #{vs[0][1].sub_title}\t\t#{chs.join(", ")}"
+        @notices << "  - ##{count.to_s.rjust(3,'0')} #{vs[0][1].sub_title}: #{chs.join(", ")}"
         clean_targets.push "# -- ##{count.to_s.rjust(3,'0')} #{vs[0][1].sub_title}"
         clean_targets.push *safe_vs.reject{ |(v,pr)| /_BS/ === v }.flat_map { |(v,pr)| video_paths_by_name[v] }
       end
     end
 
+    @notices << "\n  ```"
     clean_targets.each do |target|
       if target.start_with?("#")
-        @notices << target
+        @notices << "  #{target}"
         else
-        @notices << "rm #{target}"
+        @notices << "  rm #{target}"
       end
     end
+    @notices << "  ```\n"
   end
 
-  [archives.size, "#{archives.size}\t#{series}: #{archives.join(' ')}"]
+  [archives.size, "- #{archives.size}:  #{series}\n#{archives.map { |a| "  - `#{a}`" }.join("\n")}"]
 }.sort_by(&:first).map(&:last)
 
-puts "---"
+puts "\n----\n\n"
 
 @notices.each do |_|
   puts _
 end
 
-puts "---"
+puts "\n----\n\n"
 
 @warnings.each do |_|
   puts _
