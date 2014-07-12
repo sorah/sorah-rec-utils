@@ -31,18 +31,22 @@ puts archives_by_series.map { |series, archives_and_series_paths|
 
     archives_of_video = video_paths.map { |_| File.dirname(_) }
 
+    flag = nil
     lines = archives.map do |archive|
       if archives_of_video.include?(File.join(archive, series))
         "!!!!\t  + #{archive}"
       else
+        flag = true
         "!!!!\t  - #{archive}"
       end
     end
 
-    @warnings.push <<-EOM
+    if flag
+      @warnings.push <<-EOM
 !!!!\t#{series}/#{name}\t(#{video_paths.size}/#{archives.size})
 #{lines.join("\n")}
-    EOM
+      EOM
+    end
   end
 
   videos = video_paths_by_name.keys
