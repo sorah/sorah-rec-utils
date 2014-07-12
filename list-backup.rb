@@ -199,12 +199,6 @@ puts archives_by_series.map { |series, archives_and_series_paths|
         next nil
       end
 
-      if /ステラ女学院/ === video
-        p video
-        p times
-        p prog
-      end
-
       unless prog.count
         #@warnings << "+ no count attribute #{prog.id}: #{video}"
       end
