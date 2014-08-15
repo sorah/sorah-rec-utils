@@ -229,15 +229,17 @@ puts archives_by_series.map { |series, archives_and_series_paths|
       end
     end
 
-    @notices << "\n  ```"
-    clean_targets.each do |target|
-      if target.start_with?("#")
-        @notices << "  #{target}"
-        else
-        @notices << "  rm #{target}"
+    unless clean_targets.empty?
+      @notices << "\n  ```"
+      clean_targets.each do |target|
+        if target.start_with?("#")
+          @notices << "  #{target}"
+          else
+          @notices << "  rm #{target}"
+        end
       end
+      @notices << "  ```\n"
     end
-    @notices << "  ```\n"
   end
 
   [archives.size, "- #{archives.size}:  #{series}\n#{archives.map { |a| "  - `#{a}`" }.join("\n")}"]
