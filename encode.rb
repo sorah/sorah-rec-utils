@@ -198,6 +198,7 @@ module Encoder
     end
 
     def get_task
+      queue_keys.reverse!
       puts " = watching #{queue_keys}"
       redis.blpop(queue_keys)
     end
