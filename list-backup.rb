@@ -45,6 +45,12 @@ CIDS = {
   "GR39" => 2, # nhk e
 }
 
+def failures
+  @failures ||= File.read(ENV["FAILURE_LIST"] || '/mnt/data/tv/failure.txt').each_line.map do |_|
+    _.chomp.sub(/(\.(720|760|1080)p)?(\.mp4)?(\.ts)?(\.progress|\.log|\.fail\d*)?$/, "")
+  end
+end
+
 def cached_tids
   @cached_tids ||= begin
     tids = []
@@ -114,6 +120,13 @@ puts archives_by_series.map { |series, archives_and_series_paths|
   video_paths = archives.flat_map do |path|
     Dir[File.join(path, series, '*.mp4')]
   end
+
+  video_paths.reject! { |_|
+    if failures.any? { |f| File.basename(_).sub(/\.\d+p\.mp4$/,'') == f }
+      @warnings << "- #{_} is marked as failure"
+      true
+    end
+  }
 
   video_paths_by_name = video_paths.group_by {|_| File.basename(_) }
 
