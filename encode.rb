@@ -64,6 +64,18 @@ module Encoder
 
     module Save
       class Scp < Base
+        def initialize(*)
+          super
+
+          @cmd_prefix = []
+          remote_shell = IO.popen(["ssh", @config[:host], "echo", "$SHELL"], 'r', &:read).chomp
+
+          if remote_shell.split(?/).last == "zsh"
+            puts "  * remote shell is zsh, using noglob"
+            @cmd_prefix = ["noglob"]
+          end
+        end
+
         def save(source, destdir)
           dest = File.join(@config[:path], destdir, File.basename(source))
           dest_progress = dest + ".progress"
@@ -74,7 +86,7 @@ module Encoder
           re = system(*cmd)
           raise Fail, "SCP failed #{source}" unless re
 
-          cmd = ["ssh", @config[:host], "mv", dest_progress, dest]
+          cmd = ["ssh", @config[:host], *@cmd_prefix, "mv", dest_progress, dest]
           puts " * scp $ #{cmd.join(' ')}"
           re = system(*cmd)
           raise Fail, "SCP mv failed #{source}" unless re
