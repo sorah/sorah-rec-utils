@@ -30,6 +30,7 @@ module Encoder
           url = @config[:base].gsub(/\/$/,'') + "/" + path
           dest = File.join(destdir, File.basename(path))
 
+          url.gsub!(/#/,'%23')
           cmd = ["curl", "--globoff", "-#", "-o", dest, url]
           $stdout.puts " * fetch $ #{cmd.join(' ')}"
 
