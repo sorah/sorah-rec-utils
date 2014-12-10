@@ -5,13 +5,6 @@ require 'redis'
 require 'pathname'
 require 'socket'
 
-def tweet(message)
-  log = Fluent::Logger::FluentLogger.new("twitter", :host=>'localhost', :port=>24224)
-  log.post("encoder", message: message)
-end
-
-tweet "hi #{Time.now.to_i}"
-
 module Encoder
   class Fail < Exception; end
 
@@ -202,7 +195,27 @@ module Encoder
       @restart_file_setup = false
     end
 
+    def fluent
+      @fluent_logger ||= Fluent::Logger::FluentLogger.new(@config[:fluentd][:prefix], :host => @config[:fluentd][:host] || 'localhost', :port => (@config[:fluentd][:port] || 24224).to_i)
+    end
+
+    def fluent_log(key, data={})
+      host = Socket.gethostname
+      message_prefix = ['encode', host, data[:mode], key].compact.join('.')
+      payload = {
+        host: host,
+        state: key.to_s,
+        time: Time.now.to_i, 
+        message_prefix: message_prefix,
+        orig_message: data[:message],
+      }.merge(data)
+      payload[:message] = "#{message_prefix}: #{data[:job]} #{data[:message]}"
+
+      fluent.post(key.to_s, payload)
+    end
+
     def run
+      fluent_log :boot, message: Time.now.to_s
       setup_restart_file
       while task = get_task()
         work(task)
@@ -219,18 +232,33 @@ module Encoder
     def work(task)
       queue, source_path = task
       mode = queue.split(/:/).last
-      tweet "encode.#{Socket.gethostname}.#{mode}.start: #{source_path}"
 
-      redis.hset working_key(mode), source_path, Time.now.to_i
+      fluent_log :start, mode: mode, job: source_path
+      start_time = Time.now.to_i
+
+      redis.hset working_key(mode), source_path, start_time
 
       job = Job.new(mode, source_path, @config)
       job.run
-      tweet "encode.#{Socket.gethostname}.#{mode}.done: #{source_path}"
+
+      end_time = Time.now.to_i
+
+      fluent_log :done, mode: mode, job_duration: end_time-start_time, job: source_path
       redis.hdel working_key(mode), source_path
       true
     rescue Exception => e
-      tweet "encode.#{Socket.gethostname}.#{mode}.fail(@sorahers ): #{e.class} #{source_path}"
-      puts "  ! FAILED: #{e.inspect}"
+      puts "  ! FAILED: #{e.inspect}\n  ! #{e.backtrace.join("\n  ! ")}"
+
+      fluent_log(:error,
+        job: source_path,
+        mode: mode,
+        error_class: e.class.inspect,
+        error_message: e.message,
+        error_backtrace: e.backtrace,
+        message: "#{e.class} @sorahers",
+        long_message: "#{e.class}: #{e.message}\n\t#{e.backtrace.join("\n\t")}",
+      )
+
       if source_path && mode
         puts "  ! Requeueing"
         redis.hdel working_key(mode), source_path
@@ -261,7 +289,7 @@ module Encoder
     def check_restart_file
       if @restart_file_setup && !restart_file.exist?
         puts "Restarting..."
-        tweet "#{Socket.gethostname}.encode.restart: #{Time.now.to_i}"
+        fluent_log :restart, message: Time.now.to_s
         Kernel.exec "ruby", __FILE__, *ARGV
       end
     end
