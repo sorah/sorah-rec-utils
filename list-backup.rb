@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-abort "usage #{File.basename($0)} dir dir dir ..." if ARGV.empty?
+abort "usage #{File.basename($0)} dir dir dir ..."  if ENV['TV_STORAGES'].nil? && ENV['TV_STORAGES'] != '' && ARGV.empty?
 
 ENV["BUNDLE_GEMFILE"] = "#{File.dirname(__FILE__)}/Gemfile"
 require 'bundler/setup'
@@ -103,7 +103,8 @@ end
 @warnings = []
 @notices = []
 
-archives_by_series = ARGV.flat_map { |backup_root|
+storages = ARGV + (ENV['TV_STORAGES'] ? ENV['TV_STORAGES'].split(/ /).flat_map { |_| Dir[_] } : [])
+archives_by_series = storages.flat_map { |backup_root|
   Dir[File.join(File.expand_path(backup_root), '*_*', '*')].select { |series_dir|
     # make sure that is directory
     File.directory?(series_dir) && /\d+_\d+\// === series_dir
