@@ -248,7 +248,7 @@ puts archives_by_series.map { |series, archives_and_series_paths|
         if target.start_with?("#")
           @notices << "  #{target}"
           else
-          @notices << "  rm #{target}"
+          @notices << "  rm #{target.shellescape}"
         end
       end
       @notices << "  ```\n"
