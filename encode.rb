@@ -224,9 +224,9 @@ module Encoder
     end
 
     def get_task
-      queue_keys.reverse!
-      puts " = watching #{queue_keys}"
-      redis.blpop(queue_keys)
+      keys = ordered_queue_keys
+      puts " = watching #{keys}"
+      redis.blpop(keys)
     end
 
     def work(task)
@@ -298,8 +298,27 @@ module Encoder
       @redis ||= Redis.new(:url => @config[:redis])
     end
 
+    def ordered_queue_keys
+      if @ordered_queue_keys
+        @ordered_queue_keys.each do |chunk|
+          chunk << chunk.shift
+        end
+      else
+        @ordered_queue_keys = queue_keys
+      end
+
+      @ordered_queue_keys.flatten
+    end
+
     def queue_keys
-      @queue_keys ||= [*@config[:mode]].map { |_| queue_key(_) }
+      @queue_keys ||= [*@config[:mode]].map do |_|
+        case _
+        when Array
+          _.map { |__| queue_key(__) }
+        else
+          [queue_key(_)]
+        end
+      end
     end
 
     def queue_key(mode)
