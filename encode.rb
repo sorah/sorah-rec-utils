@@ -262,7 +262,7 @@ module Encoder
       if source_path && mode
         puts "  ! Requeueing"
         redis.hdel working_key(mode), source_path
-        redis.rpush queue_key(mode), source_path
+        redis.rpush *task
       end
       sleep 10
       false
