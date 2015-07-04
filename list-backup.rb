@@ -256,8 +256,8 @@ puts archives_by_series.map { |series, archives_and_series_paths|
     end
   end
 
-  [archives.size, "- #{archives.size}:  #{series}\n#{archives.map { |a| "  - `#{a}`" }.join("\n")}"]
-}.sort_by(&:first).map(&:last)
+  [archives.size, series, "- #{archives.size}:  #{series}\n#{archives.map { |a| "  - `#{a}`" }.join("\n")}"]
+}.sort_by{ |_| _[0,2] }.map(&:last)
 
 puts "\n----\n\n"
 
