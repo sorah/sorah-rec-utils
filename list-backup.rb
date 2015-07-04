@@ -107,7 +107,7 @@ storages = ARGV + (ENV['TV_STORAGES'] ? ENV['TV_STORAGES'].split(/ /).flat_map {
 archives_by_series = storages.flat_map { |backup_root|
   Dir[File.join(File.expand_path(backup_root), '*_*', '*')].select { |series_dir|
     # make sure that is directory
-    File.directory?(series_dir) && /\d+_\d+\// === series_dir
+    File.directory?(series_dir) && /\d+_\d+s?\// === series_dir
   }.map { |series_dir|
     [backup_root, series_dir]
   }
