@@ -159,7 +159,11 @@ puts archives_by_series.map { |series, archives_and_series_paths|
   gr = videos.grep(/_GR/)
   bs = videos.grep(/_BS/)
 
-  query = File.basename(series).sub(/_再$/,'').sub(/放課後のプレアデス/, '放課後のプレアデス(TVシリーズ)')
+  query = if File.exist?(File.join(series, '.syoboi-query'))
+    File.read(File.join(series, '.syoboi-query')).chomp
+  else
+    File.basename(series).sub(/_再$/,'').sub(/放課後のプレアデス/, '放課後のプレアデス(TVシリーズ)')
+  end
   tids = search_tid(query)
 
   if tids.empty?
