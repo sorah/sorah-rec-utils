@@ -4,6 +4,7 @@ require 'yaml'
 require 'redis'
 require 'pathname'
 require 'socket'
+require 'shellwords'
 
 module Encoder
   class Fail < Exception; end
@@ -80,7 +81,7 @@ module Encoder
           re = system(*cmd)
           raise Fail, "SCP failed #{source}" unless re
 
-          cmd = ["ssh", @config[:host], *@cmd_prefix, "mv", dest_progress, dest]
+          cmd = ["ssh", @config[:host], *@cmd_prefix, ["mv", dest_progress, dest].shelljoin]
           puts " * scp $ #{cmd.join(' ')}"
           re = system(*cmd)
           raise Fail, "SCP mv failed #{source}" unless re
