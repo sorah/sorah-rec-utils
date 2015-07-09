@@ -261,7 +261,7 @@ module Encoder
       )
 
       if source_path && mode
-        puts "  ! Requeueing"
+        puts "  * Requeueing"
         redis.hdel working_key(mode), source_path
         redis.rpush *task
       end
