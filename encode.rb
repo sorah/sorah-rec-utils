@@ -75,7 +75,7 @@ module Encoder
           dest = File.join(@config[:path], destdir, File.basename(source))
           dest_progress = dest + ".progress"
 
-          cmd = ["scp", source, "#{@config[:host]}:#{dest_progress}"]
+          cmd = ["scp", source, "#{@config[:host]}:#{dest_progress.shellescape}"]
 
           puts " * scp $ #{cmd.join(' ')}"
           re = system(*cmd)
