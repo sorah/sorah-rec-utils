@@ -81,7 +81,7 @@ def cached_tids
 end
 
 def queryize(str)
-  str.sub(/[ 　].*$/,'').gsub(STOPWORD,'').gsub(/！/,'!').downcase
+  str.sub(/[ 　].*$/,'').gsub(STOPWORD,'').gsub(/！/,'!').gsub(/？/,'?').gsub(/：/,':').gsub(/×/, 'x').downcase
 end
 
 def search_tid(str)
