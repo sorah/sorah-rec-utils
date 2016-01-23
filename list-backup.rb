@@ -183,10 +183,15 @@ puts archives_by_series.map { |series, archives_and_series_paths|
 
     video_with_progs = videos.map do |video|
       dt, ch, _ = video.sub(/\.\d+p\.mp4$/,'').split(/_/, 3)
-      time = Time.new( # YYYYMMDDhhmmss
-        dt[0,4].to_i, dt[4,2].to_i, dt[6,2].to_i,
-        dt[8,2].to_i, dt[10,2].to_i, dt[12,2].to_i
-      )
+      time = begin
+        Time.new( # YYYYMMDDhhmmss
+          dt[0,4].to_i, dt[4,2].to_i, dt[6,2].to_i,
+          dt[8,2].to_i, dt[10,2].to_i, dt[12,2].to_i
+        )
+      rescue ArgumentError
+        @warnings << "- unknown time #{video}"
+        next
+      end
       cid = CIDS[ch]
 
       unless cid
@@ -201,6 +206,7 @@ puts archives_by_series.map { |series, archives_and_series_paths|
       # (if video recorded in 00:00-04:59, it'll be also treated as previous date)
        times = nil
       prog ||= progs.find do |pr|
+        #$stderr.puts [video, pr.sub_title, pr.response.StTime].inspect
         st = pr.started_at
         times = [[st.year, st.month, st.day]]
         if time.hour <= 4
