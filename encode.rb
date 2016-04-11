@@ -149,6 +149,7 @@ module Encoder
     end
 
     def save
+      puts " * Skipping save (File::NULL)" if File.realpath(dest_path) == File::NULL
       save_strategy.save(dest_path, File.dirname(@source_path))
     end
 
@@ -173,7 +174,11 @@ module Encoder
     end
 
     def out_filename
-      "#{File.basename(@source_path).gsub(/\.ts$/, '')}.#{@mode}.mp4"
+      ext = case @mode
+            when 'ass'; 'ass'
+            else; 'mp4'
+            end
+      "#{File.basename(@source_path).gsub(/\.ts$/, '')}.#{@mode}.#{ext}"
     end
 
 
