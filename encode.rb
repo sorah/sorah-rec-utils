@@ -149,7 +149,10 @@ module Encoder
     end
 
     def save
-      puts " * Skipping save (File::NULL)" if File.realpath(dest_path) == File::NULL
+      if File.realpath(dest_path) == File::NULL
+        puts " * Skipping save (File::NULL)"
+        return 
+      end
       save_strategy.save(dest_path, File.dirname(@source_path))
     end
 
