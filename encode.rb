@@ -8,6 +8,10 @@ require 'shellwords'
 
 module Encoder
   class Fail < Exception; end
+  module Fails
+    class FetchFail < Fail; end
+    class EncodeFail < Fail; end
+  end
 
   module Strategy
     class Base
@@ -29,7 +33,7 @@ module Encoder
           $stdout.puts " * fetch $ #{cmd.join(' ')}"
 
           re = system(*cmd)
-          raise Fail, "fetch fail #{url}" unless re
+          raise Fails::FetchFail, "fetch fail #{url}" unless re
 
           dest
         end
@@ -47,7 +51,7 @@ module Encoder
       class Local < Base
         def fetch(path, destdir)
           local_path = File.join(@config[:path], path)
-          raise Fail, "file doesn't exist #{local_path}" unless File.exist?(local_path)
+          raise Fails::FetchFail, "file doesn't exist #{local_path}" unless File.exist?(local_path)
 
           local_path
         end
