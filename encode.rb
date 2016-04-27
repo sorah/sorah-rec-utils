@@ -25,7 +25,7 @@ module Encoder
           dest = File.join(destdir, File.basename(path))
 
           url.gsub!(/#/,'%23')
-          cmd = ["curl", "--globoff", "-#", "-o", dest, url]
+          cmd = ["curl", "--fail", "--globoff", "-#", "-o", dest, url]
           $stdout.puts " * fetch $ #{cmd.join(' ')}"
 
           re = system(*cmd)
