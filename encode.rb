@@ -10,6 +10,7 @@ module Encoder
   class Fail < Exception; end
   module Fails
     class FetchFail < Fail; end
+    class SaveFail < Fail; end
     class EncodeFail < Fail; end
   end
 
@@ -83,12 +84,12 @@ module Encoder
 
           puts " * scp $ #{cmd.join(' ')}"
           re = system(*cmd)
-          raise Fail, "SCP failed #{source}" unless re
+          raise Fails::SaveFail, "SCP failed #{source}" unless re
 
           cmd = ["ssh", @config[:host], *@cmd_prefix, ["mv", dest_progress, dest].shelljoin]
           puts " * scp $ #{cmd.join(' ')}"
           re = system(*cmd)
-          raise Fail, "SCP mv failed #{source}" unless re
+          raise Fails::SaveFail, "SCP mv failed #{source}" unless re
         end
       end
 
@@ -104,8 +105,6 @@ module Encoder
   end
 
   class Job
-    class EncodeFailed < Fail; end
-
     def initialize(mode, path, config)
       @mode, @source_path, @config = mode, path, config
     end
@@ -147,7 +146,7 @@ module Encoder
       else
         re = system(*cmd)
       end
-      raise EncodeFailed unless re
+      raise Fails::EncodeFail unless re
 
       File.rename(dest_progress, dest)
     end
