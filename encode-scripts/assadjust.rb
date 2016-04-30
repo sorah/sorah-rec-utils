@@ -1,4 +1,4 @@
-#!/usr/bin/ruby
+#!/usr/bin/env ruby
 # coding: utf-8
 
 # based on https://github.com/eagletmt/eagletmt-recutils
