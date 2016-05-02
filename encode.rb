@@ -93,6 +93,26 @@ module Encoder
         end
       end
 
+      class Webdav < Base
+        def save(source, destdir)
+          dest = [destdir, File.basename(source)].join(?/)
+          url = @config[:base].gsub(/\/$/,'') + "/" + dest
+          url.gsub!(/#/,'%23')
+
+          user = @config[:user] && ['-u', @config[:user]]
+          cmd = ["curl", *user, "-o", "/dev/stdout", "--fail", "--globoff", "--upload-file", source, "-X", "PUT", "-D", '-', url]
+
+          $stdout.puts " * save url: #{url}"
+          $stdout.puts " * save $ #{cmd.join(' ')}"
+
+          re = system(*cmd)
+          raise Fails::SaveFail, "save fail #{url}" unless re
+
+          dest
+        end
+      end
+
+
       class Local < Base
         def save(source, destdir)
           dest = File.join(@config[:path], destdir, File.basename(source))
