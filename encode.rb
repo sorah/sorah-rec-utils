@@ -140,6 +140,7 @@ module Encoder
         puts " !   #{bt}"
       end
 
+      cleanup if @config[:cleanup_even_on_failure]
       raise e
     else
       cleanup
