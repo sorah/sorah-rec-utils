@@ -100,7 +100,7 @@ module Encoder
           url.gsub!(/#/,'%23')
 
           user = @config[:user] && ['-u', @config[:user]]
-          cmd = ["curl", *user, "-o", "/dev/stdout", "--fail", "--globoff", "--upload-file", source, "-X", "PUT", "-D", '-', url]
+          cmd = ["curl", *user, "-o", "-", "--fail", "--globoff", "--upload-file", source, "-X", "PUT", "-D", '-', url]
 
           $stdout.puts " * save url: #{url}"
           $stdout.puts " * save $ #{cmd.join(' ')}"
