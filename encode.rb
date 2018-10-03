@@ -297,6 +297,12 @@ module Encoder
         redis.hdel working_key(mode), source_path
         redis.rpush *task
       end
+
+      if e.is_a?(SignalException)
+        puts "Shutting down!"
+        exit
+      end
+
       sleep 10
       false
     end
