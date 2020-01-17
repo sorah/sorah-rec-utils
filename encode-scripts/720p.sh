@@ -1,2 +1,13 @@
 #!/bin/bash
-/usr/bin/time -p ffmpeg -y -i "$1" -f mp4 -vcodec libx264 -vpre libx264-hq-ts -aspect 16:9 -s 1280x720 -crf 24 -acodec libfaac -ac 2 -ar 48000 -ab 192k "$2"
+exec /usr/bin/time -p \
+  ffmpeg -y \
+  -i "$1" \
+  -f mp4 \
+  -movflags faststart \
+  -vf bwdif=0:-1:1,scale=1280x720 \
+  -c:v libx264 \
+  -preset slow \
+  -crf 24 \
+  -c:a libfdk_aac \
+  -b:a 192k \
+  "$2"

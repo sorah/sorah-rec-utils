@@ -1,2 +1,13 @@
 #!/bin/bash
-/usr/bin/time -p ffmpeg -y -i "$1" -deinterlace -f mp4 -vcodec libx264 -vpre libx264-hq-ts -bufsize 20000k -maxrate 25000k -acodec libfaac -ac 2 -ar 48000 -ab 192k "$2"
+exec /usr/bin/time -p \
+  ffmpeg -y \
+  -i "$1" \
+  -f mp4 \
+  -movflags faststart \
+  -vf bwdif=0:-1:1,scale=1920x1080 \
+  -c:v libx264 \
+  -preset slower \
+  -crf 22 \
+  -c:a libfdk_aac \
+  -b:a 228k \
+  "$2"

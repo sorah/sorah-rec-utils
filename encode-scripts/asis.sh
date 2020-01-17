@@ -1,2 +1,12 @@
 #!/bin/bash
-/usr/bin/time -p ffmpeg -y -i "$1" -f mp4 -vcodec libx264 -crf 24 -acodec libfaac -ac 2 -ar 48000 -ab 128k "$2"
+exec /usr/bin/time -p \
+  ffmpeg -y \
+  -i "$1" \
+  -f mp4 \
+  -movflags faststart \
+  -c:v libx264 \
+  -preset slower \
+  -crf 22 \
+  -c:a libfdk_aac \
+  -b:a 228k \
+  "$2"

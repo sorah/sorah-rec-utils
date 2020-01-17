@@ -60,6 +60,16 @@ module Encoder
         def cleanup(path, destdir)
         end
       end
+
+      class Ffmpeg < Base
+        def fetch(path, destdir)
+          url = @config[:base].gsub(/\/$/,'') + "/" + path
+          url
+        end
+
+        def cleanup(path, destdir)
+        end
+      end
     end
 
     module Save
@@ -224,7 +234,7 @@ module Encoder
 
   class Core
     def initialize(config_file)
-      @config = YAML.load_file(config_file)
+      @config = JSON.parse(config_file, symbolize_names: true)
       @restart_file_setup = false
     end
 
@@ -295,7 +305,7 @@ module Encoder
       if source_path && mode
         puts "  * Requeueing"
         redis.hdel working_key(mode), source_path
-        redis.rpush *task
+        redis.rpush(*task)
       end
 
       if e.is_a?(SignalException)
@@ -310,7 +320,7 @@ module Encoder
     private
 
     def restart_file
-      @restart_file ||= Pathname.new('/tmp').join(['restart-encoder', $$.to_s].compact.join('-'))
+      @restart_file ||= Pathname.new('/run/encoder').join(['restart', $$.to_s].compact.join('-'))
     end
 
     def setup_restart_file
@@ -370,4 +380,4 @@ module Encoder
   end
 end
 
-Encoder::Core.new(ARGV[0] || 'config.yml').run
+Encoder::Core.new(ARGV[0] || 'config.json').run
