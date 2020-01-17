@@ -1,6 +1,6 @@
 require 'fluent-logger'
 require 'uri'
-require 'yaml'
+require 'json'
 require 'redis'
 require 'pathname'
 require 'socket'
@@ -239,7 +239,7 @@ module Encoder
 
   class Core
     def initialize(config_file)
-      @config = JSON.parse(config_file, symbolize_names: true)
+      @config = JSON.parse(File.read(config_file), symbolize_names: true)
       @restart_file_setup = false
     end
 
