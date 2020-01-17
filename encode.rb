@@ -172,10 +172,11 @@ module Encoder
 
       cmd = [script_path, @local_path, dest_progress]
       puts " * encode $ #{cmd.join("  ")}"
-      if @config[:silent]
-        re = system(*cmd, out: File::NULL, err: File::NULL)
-      else
-        re = system(*cmd)
+      puts " > #{log_path}"
+
+      re = nil
+      File.open(log_path, "w") do |io|
+        re = system(*cmd, out: io, err: io)
       end
       raise Fails::EncodeFail unless re
 
@@ -208,6 +209,10 @@ module Encoder
 
     def dest_path
       File.join(@config[:workdir], out_filename)
+    end
+
+    def log_path
+      File.join(@config[:log_dir], "#{out_filename}.log")
     end
 
     def out_filename
