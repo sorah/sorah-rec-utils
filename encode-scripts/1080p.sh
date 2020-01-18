@@ -6,7 +6,7 @@ exec /usr/bin/time -p \
   -movflags faststart \
   -vf bwdif=0:-1:1,scale=1920x1080 \
   -c:v libx264 \
-  -preset slower \
+  -preset slow \
   -crf 22 \
   -c:a libfdk_aac \
   -b:a 228k \

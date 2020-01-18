@@ -382,6 +382,10 @@ module Encoder
     def working_key(mode)
       "encode-working:#{mode}"
     end
+
+    def hostname
+      Socket.gethostname
+    end
   end
 end
 
