@@ -298,6 +298,11 @@ module Encoder
       end_time = Time.now.to_i
 
       fluent_log :done, mode: mode, job_duration: end_time-start_time, job: source_path
+      begin
+        redis.ping
+      rescue Errno::ETIMEDOUT => e 
+        $stderr.puts "  * #{e.inspect}"
+      end
       redis.hdel working_key(mode), source_path
       true
     rescue Exception => e
