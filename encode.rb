@@ -175,6 +175,8 @@ module Encoder
       puts " > #{log_path}"
 
       re = nil
+      File.symlink(log_path, "#{current_log_path}.new")
+      File.rename("#{current_log_path}.new", current_log_path)
       File.open(log_path, "w") do |io|
         re = system(*cmd, out: io, err: io)
       end
@@ -213,6 +215,10 @@ module Encoder
 
     def log_path
       File.join(@config[:log_dir], "#{out_filename}.log")
+    end
+
+    def current_log_path
+      File.join(@config[:log_dir], "current.log")
     end
 
     def out_filename
