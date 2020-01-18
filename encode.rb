@@ -175,8 +175,8 @@ module Encoder
       puts " > #{log_path}"
 
       re = nil
+      File.symlink(log_path, "#{current_log_path}.new")
       File.open(log_path, "w") do |io|
-        File.symlink(log_path, "#{current_log_path}.new")
         File.rename("#{current_log_path}.new", current_log_path)
         re = system(*cmd, out: io, err: io)
       end
