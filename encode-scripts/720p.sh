@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 exec /usr/bin/time -p \
   ffmpeg -y \
   -i "$1" \
