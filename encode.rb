@@ -7,7 +7,7 @@ require 'socket'
 require 'shellwords'
 
 module Encoder
-  class Fail < Exception; end
+  class Fail < StandardError; end
   module Fails
     class FetchFail < Fail; end
     class SaveFail < Fail; end
