@@ -1,6 +1,7 @@
 #!/bin/bash -x
 exec /usr/bin/time -p \
   ffmpeg -y \
+  -threads $("$(dirname $0)/../ffmpeg-nproc.sh") \
   -i "$1" \
   -f mp4 \
   -movflags faststart \
