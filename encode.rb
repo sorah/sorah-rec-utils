@@ -112,6 +112,8 @@ module Encoder
           user = @config[:user] && ['-u', @config[:user]]
           cmd = ["curl", *user, "-o", "-", "--fail", "--globoff", "--upload-file", source, "-X", "PUT", "-D", '-', url]
 
+          $stdout.puts " * source: #{source.inspect} (#{File.basename(source).inspect})"
+          $stdout.puts " * destdir: #{destdir.inspect}"
           $stdout.puts " * save url: #{url}"
           $stdout.puts " * save $ #{cmd.join(' ')}"
 
